@@ -8,6 +8,24 @@
 
 #include <bits/stdc++.h>
 
+std::vector<std::chrono::_V2::system_clock::time_point> times;
+void StartClock() {
+  times.push_back(std::chrono::high_resolution_clock::now());
+}
+int EndClock() {
+  auto t0_ = times.back();
+  times.pop_back();
+  using std::chrono::high_resolution_clock;
+  using std::chrono::duration_cast;
+  using std::chrono::duration;
+  using std::chrono::milliseconds;
+  auto t1 = std::chrono::high_resolution_clock::now();
+  auto ms_int = duration_cast<milliseconds>(t1 - t0_);
+  return ms_int.count();
+}
+std::map<std::string, int> kTiming;
+std::map<std::string, int> kInvocation;
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <fstream>
@@ -19,7 +37,12 @@ double Evaluate() {
     + " -netlist " + output_path
     + " -output " + cost_output_path
     + " >/dev/null";
+  
+  StartClock();
   int result = std::system(cmd.c_str());
+  kTiming["cost_eval"] += EndClock();
+  ++kInvocation["cost_eval"];
+
   if (WIFSIGNALED(result)) { // https://stackoverflow.com/a/3771792
     printf("Exited with signal %d\n", WTERMSIG(result));
     exit(1);
@@ -38,11 +61,16 @@ double AcceptProbability(double E, double Ep, double T) {
 }
 
 void Write(std::vector<std::string> header, std::vector<std::string> body) {
+  StartClock();
+  
   std::ofstream fout(output_path);
   for (auto& line : header) fout << line << "\n";
   for (auto& line : body) fout << line << "\n";
   fout << "endmodule\n";
   fout.close();
+
+  kTiming["write"] += EndClock();
+  ++kInvocation["write"];
 }
 
 int32_t main(int argc, char** argv) {
@@ -131,6 +159,8 @@ int32_t main(int argc, char** argv) {
     double T1 = std::abs(6.1445297e-1 / std::log(0.8));
 
     for (int i = 0; i < kMaxIter; ++i) {
+      StartClock();
+
       // T = (std::exp(1 - i / (double)kMaxIter) - 1) / (std::exp(1.0) - 1) * (kMaxTemp - kMinTemp) + kMinTemp;
       T = T1 * 0.2 / i;
       if (i == 0) T = T1;
@@ -182,10 +212,14 @@ int32_t main(int argc, char** argv) {
         // discard the change
         for (auto [idx, revert, _] : changes) body[idx][body_idx[idx]] = revert;
       }
+
+      kTiming["iter"] += EndClock();
+      ++kInvocation["iter"];
     }
   }
 
   Write(header, best_body);
+  std::cout << std::endl;
   std::cout << "best = " << E_low << std::endl;
 
   // double tot = 0;
@@ -197,6 +231,15 @@ int32_t main(int argc, char** argv) {
   //   for (auto x : a) tot += x;
   //   std::cout << "bucket=" << k << " cost_avg= " << (tot/a.size()) << "\n";
   // }
+
+  std::cout << std::endl;
+  for (auto [k, tot] : kTiming) {
+    int n = kInvocation[k];
+    std::cout << std::setw(20) << k 
+      << " n=" << std::setw(5) << kInvocation[k]
+      << " tot=" << std::setw(10) << tot << "ms"
+      << " avg=" << std::setw(10) << (tot/n) << "ms" << "\n";
+  }
 
   return 0;
 }
