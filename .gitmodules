@@ -1,0 +1,3 @@
+[submodule "external/Parser-Verilog"]
+	path = external/Parser-Verilog
+	url = git@github.com:OpenTimer/Parser-Verilog.git

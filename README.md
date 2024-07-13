@@ -1,6 +1,14 @@
 # ICCAD 2024 Contest Problem A
 > Reinforcement Logic Optimization for a General Cost Function 
 
+## Dependencies
+```sh
+apt update
+apt install make flex bison g++
+git submodule update --init --recursive
+mkdir build -p
+```
+
 ## Installation
 ```sh
 (cd build; make -f ../Makefile)
