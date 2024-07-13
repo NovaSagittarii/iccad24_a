@@ -39,4 +39,4 @@ verilog_parser.o: ../cost/verilog_parser.cc
 	$(CC17) $(VERILOG_INCLUDES) -c $^
 
 verilog_parser: verilog_parser.tab.o verilog_lexer.yy.o verilog_parser.o
-	$(CC17) -o $@ $^ -lstdc++fs
+	$(CC17) -o $@ $^
