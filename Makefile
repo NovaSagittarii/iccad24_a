@@ -35,8 +35,8 @@ $(VERILOG_OUTPUT_PATH)/verilog_parser.tab.cc: $(VERILOG_PARSER_SRC_PATH)/verilog
 verilog_parser.tab.o: $(VERILOG_OUTPUT_PATH)/verilog_parser.tab.cc
 	$(CC17) $(VERILOG_INCLUDES) -c $^
 
-verilog_parser.o: ../cost/verilog_parser.cc
-	$(CC17) $(VERILOG_INCLUDES) -c $^
+verilog_parser.o: ../cost/verilog_parser.cc ../cost/verilog_parser.hh
+	$(CC17) $(VERILOG_INCLUDES) -I ../cost -c ../cost/verilog_parser.cc
 
 verilog_parser: verilog_parser.tab.o verilog_lexer.yy.o verilog_parser.o
 	$(CC17) -o $@ $^

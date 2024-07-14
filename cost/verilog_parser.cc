@@ -1,33 +1,65 @@
-#include <filesystem>
+#include "verilog_parser.hh"
+
 #include <iostream>
 
-#include "verilog_driver.hpp" // The only include you need
+void CostFunction::LoadNetlist(const std::filesystem::__cxx11::path &file) {
+  Clear();
+  read(file);
+}
 
-// Define your own parser by inheriting the ParserVerilogInterface
-struct SampleParser : public verilog::ParserVerilogInterface {
-  virtual ~SampleParser() {}
+void CostFunction::LoadLibrary(const std::filesystem::__cxx11::path &file) {}
 
-  // Function that will be called when encountering the top module name.
-  void add_module(std::string &&name) {
-    std::cout << "Module: " << name << '\n';
+void CostFunction::Clear() {
+  module_name_.clear();
+  input_ports_.clear();
+  output_ports.clear();
+  wires_.clear();
+}
+
+void CostFunction::add_module(std::string &&name) {
+  module_name_ = std::move(name);
+}
+
+void CostFunction::add_port(verilog::Port &&port) {
+  // std::cout << "Port: " << port << '\n';
+  switch (port.dir) {
+    case verilog::PortDirection::INPUT:
+      for (std::string &name : port.names) {
+        input_ports_.push_back(name);
+      }
+      break;
+    case verilog::PortDirection::OUTPUT:
+      for (std::string &name : port.names) {
+        output_ports.push_back(name);
+      }
+      break;
   }
+}
 
-  // Function that will be called when encountering a port.
-  void add_port(verilog::Port &&port) { std::cout << "Port: " << port << '\n'; }
-
-  // Function that will be called when encountering a net.
-  void add_net(verilog::Net &&net) { std::cout << "Net: " << net << '\n'; }
-
-  // Function that will be called when encountering a assignment statement.
-  void add_assignment(verilog::Assignment &&ast) {
-    std::cout << "Assignment: " << ast << '\n';
+void CostFunction::add_net(verilog::Net &&net) {
+  std::cout << "Net: " << net << '\n';
+  if (net.type == verilog::NetType::WIRE) {
+    for (std::string &name : net.names) {
+      wires_.push_back(name);
+    }
   }
+}
 
-  // Function that will be called when encountering a module instance.
-  void add_instance(verilog::Instance &&inst) {
-    std::cout << "Instance: " << inst << '\n';
+void CostFunction::add_assignment(verilog::Assignment &&ast) {
+  // std::cout << "Assignment: " << ast << '\n';
+}
+
+void CostFunction::add_instance(verilog::Instance &&inst) {
+  // std::cout << "Instance: " << inst << '\n';
+
+  std::cout << inst.module_name;
+
+  for (auto &net : inst.net_names) {
+    for (auto &x : net) std::cout << std::get<std::string>(x) << " ";
+    std::cout << "\n";
   }
-};
+  for (auto &x : inst.pin_names) std::cout << std::get<std::string>(x) << "\n";
+}
 
 int main(const int argc, const char **argv) {
   if (argc < 2) {
@@ -36,8 +68,8 @@ int main(const int argc, const char **argv) {
   }
 
   if (std::filesystem::exists(argv[1])) {
-    SampleParser parser;
-    parser.read(argv[1]);
+    CostFunction parser;
+    parser.LoadNetlist(argv[1]);
   }
   return EXIT_SUCCESS;
 }
