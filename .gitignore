@@ -1,5 +1,8 @@
 .vscode/
 
 build/
+external/*/**
+
 **/*.v
 **/*.txt
+**/*.json

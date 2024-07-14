@@ -3,8 +3,13 @@
 
 ## Usage
 ```sh
-
+# from project root directory
+cd build; make -f ../Makefile verilog_parser
+(cd build; make -f ../Makefile verilog_parser) && ./build/verilog_parser ./design1.v
 ```
+
+With VS Code, you may need to add `${workspaceFolder}/**/include/**` to 
+the `includePath`.
 
 ## Algorithm
 

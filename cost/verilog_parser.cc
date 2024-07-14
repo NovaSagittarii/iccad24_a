@@ -2,12 +2,17 @@
 
 #include <iostream>
 
-void CostFunction::LoadNetlist(const std::filesystem::__cxx11::path &file) {
+#include "library.hh"
+
+void CostFunction::LoadNetlist(const std::filesystem::path &file) {
   Clear();
   read(file);
 }
 
-void CostFunction::LoadLibrary(const std::filesystem::__cxx11::path &file) {}
+void CostFunction::LoadLibrary(const std::filesystem::path &file) {
+  Library lib;
+  lib.Load(file);
+}
 
 void CostFunction::Clear() {
   module_name_.clear();
@@ -52,10 +57,10 @@ void CostFunction::add_assignment(verilog::Assignment &&ast) {
 void CostFunction::add_instance(verilog::Instance &&inst) {
   // std::cout << "Instance: " << inst << '\n';
 
-  std::cout << inst.module_name;
+  std::cout << inst.module_name << "\n";
 
   for (auto &net : inst.net_names) {
-    for (auto &x : net) std::cout << std::get<std::string>(x) << " ";
+    for (auto &x : net) std::cout << " " << std::get<std::string>(x);
     std::cout << "\n";
   }
   for (auto &x : inst.pin_names) std::cout << std::get<std::string>(x) << "\n";
@@ -70,6 +75,7 @@ int main(const int argc, const char **argv) {
   if (std::filesystem::exists(argv[1])) {
     CostFunction parser;
     parser.LoadNetlist(argv[1]);
+    parser.LoadLibrary("lib1.json");
   }
   return EXIT_SUCCESS;
 }

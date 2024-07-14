@@ -1,3 +1,6 @@
 [submodule "external/Parser-Verilog"]
 	path = external/Parser-Verilog
 	url = git@github.com:OpenTimer/Parser-Verilog.git
+[submodule "external/json"]
+	path = external/json
+	url = git@github.com:nlohmann/json.git
