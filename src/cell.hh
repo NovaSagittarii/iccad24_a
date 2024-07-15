@@ -18,6 +18,11 @@ class Cell {
    */
   void LoadProperty(const std::string& key, const std::string& value);
 
+  const std::string& name() const { return name_; }
+  const std::string& type() const { return type_; }
+  const auto& leakage_power() const { return leakage_power_; }
+  const auto& area() const { return area_; }
+
  private:
   std::string name_, type_;
   std::vector<double> f_properties_;

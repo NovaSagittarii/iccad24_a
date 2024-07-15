@@ -3,7 +3,6 @@
 #include <fstream>
 #include <iostream>
 
-#include "cell.hh"
 #include "nlohmann/json.hpp"
 
 void Library::Load(const std::filesystem::path &file) {
@@ -17,5 +16,7 @@ void Library::Load(const std::filesystem::path &file) {
     for (auto &x : cell_data.items()) {
       c.LoadProperty(x.key(), x.value());
     }
+    cells_[c.name()] = c;
   }
+  std::cout << "[load] lib n=" << n_ << " m=" << m_ << std::endl;
 }

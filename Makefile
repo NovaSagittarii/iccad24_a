@@ -28,6 +28,10 @@ library.o: $(SRC_PATH)/library.hh $(SRC_PATH)/library.cc
 	$(CC17) $(JSON_INCLUDES) -I $(SRC_PATH) \
 		-c $(SRC_PATH)/library.cc
 
+netlist.o: $(SRC_PATH)/netlist.hh $(SRC_PATH)/netlist.cc
+	$(CC17) $(VERILOG_INCLUDES) -I $(SRC_PATH) \
+		-c $(SRC_PATH)/netlist.cc
+
 cell.o: $(SRC_PATH)/cell.hh $(SRC_PATH)/cell.cc
 	$(CC17) -c $(SRC_PATH)/cell.cc
 
@@ -36,7 +40,7 @@ verilog_parser.o: ../cost/verilog_parser.cc ../cost/verilog_parser.hh
 		-c ../cost/verilog_parser.cc
 
 verilog_parser: verilog_parser.tab.o verilog_lexer.yy.o \
-	verilog_parser.o library.o cell.o
+	verilog_parser.o library.o cell.o netlist.o
 	$(CC17) -o $@ $^
 
 ###
