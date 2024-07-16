@@ -3,15 +3,22 @@
 #include <cmath>
 #include <iostream>
 
+#include "timing.hh"
+
 void CostFunction::LoadNetlist(const std::filesystem::path &file) {
+  StartClock();
   netlist_.Load(file);
+  EndClockPrint("<load:netlist>");
 }
 
 void CostFunction::LoadLibrary(const std::filesystem::path &file) {
+  StartClock();
   library_.Load(file);
+  EndClockPrint("<load:library>");
 }
 
 double CostFunction::Evaluate() {
+  StartClock();
   double area = 0, power = 0;
   for (auto [cell_name, cells_used] : netlist_.cell_count()) {
     const auto &cell = library_.cells().at(cell_name);
@@ -25,6 +32,7 @@ double CostFunction::Evaluate() {
   if (area >= a0 || (dynamic_power + p0 >= 0 && power >= p0)) {
     cost += 2e7;
   }
+  EndClockPrint("<eval:costfunc>");
   return std::pow(cost, 0.5);
 }
 
@@ -38,7 +46,8 @@ int main(const int argc, const char **argv) {
     CostFunction f;
     f.LoadNetlist(argv[1]);
     f.LoadLibrary("lib1.json");
-    std::cout << "cost = " << f.Evaluate() << std::endl;
+    double cost = f.Evaluate();
+    std::cout << "cost = " << cost << std::endl;
   }
   return EXIT_SUCCESS;
 }
