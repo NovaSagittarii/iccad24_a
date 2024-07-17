@@ -8,6 +8,8 @@
 // #include "verilog_driver.hpp"  // verilog parser library
 #include "simple_verilog_driver.hh"  // verilog parser library (reduced functionality)
 
+#include "gate.hh"
+
 /**
  * @brief Represents a netlist, supports various netlist queries.
  */
@@ -64,6 +66,7 @@ class Netlist : protected verilog::ParserVerilogInterface {
 
   std::string module_name_;
   std::vector<std::string> input_ports_, output_ports, wires_;
+  std::vector<Gate> gates_;
   double clock_period_, area_constraint_, power_constraint_;
 
   std::map<std::string, int> cell_count_;

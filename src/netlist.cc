@@ -52,11 +52,20 @@ void Netlist::add_instance(verilog::Instance &&inst) {
   // std::cout << inst.module_name << "\n";  // cell_name
   ++cell_count_[inst.module_name];
 
+  std::vector<std::string> pins;
   for (auto &net : inst.net_names) {
     // what nets are connected
     // for (auto &x : net) std::cout << " " << std::get<std::string>(x);
     // std::cout << "\n";
+
+    pins.push_back(std::get<std::string>(net.front()));
   }
+
+  Gate gate(std::string(inst.inst_name), inst.module_name, pins.back());
+  pins.pop_back();
+  for (std::string pin : pins) gate.AddInput(pin);
+  gates_.push_back(gate);
+
   // pin names is just the pin labels like A, B, Y (not used)
   // for (auto &x : inst.pin_names) std::cout << std::get<std::string>(x) <<
   // "\n";
