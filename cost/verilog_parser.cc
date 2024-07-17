@@ -27,7 +27,12 @@ double CostFunction::Evaluate() {
   }
   auto [c0, a0, p0] = netlist_.GetConstraints();
 
-  double dynamic_power = 0;
+  double dynamic_power = netlist_.ComputeDynamicPower(library_);
+  std::cout << std::fixed << std::setprecision(26);
+  std::cout << "area      = " << area << "\n"
+            << "power     = " << power << "\n"
+            << "dyn_power = " << dynamic_power << std::endl;
+
   double cost = area * (power + dynamic_power);
   if (area >= a0 || (dynamic_power + p0 >= 0 && power >= p0)) {
     cost += 2e7;

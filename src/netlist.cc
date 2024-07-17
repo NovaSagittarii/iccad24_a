@@ -1,8 +1,89 @@
 #include "netlist.hh"
 
+#include <queue>
 #include <sstream>
 
 void Netlist::Load(const std::filesystem::__cxx11::path &file) { read(file); }
+
+double Netlist::ComputeDynamicPower(const Library &lib) const {
+  // map<net, vector<gate>>
+  std::map<std::string, std::vector<std::string>> adj;
+  // map<gate, vector<net>>
+  std::map<std::string, std::vector<std::string>> radj;
+  std::map<std::string, std::string> driver;  // map<gate, net>
+  std::map<std::string, int> deps;            // map<gate, remaining deps>
+  std::map<std::string, GATE> types;          // map<gate, gate_type>
+  std::map<std::string, double> set_prob;     // map<net, set_prob>
+  std::queue<std::string> queue;              // things ready for processing
+  std::map<std::string, Gate> gates;
+
+  for (auto gate : gates_) {
+    const std::string cell_type = lib.GetCell(gate.cell()).type();
+    const std::string curr = gate.name();
+    deps[curr] = cell_type == "buf" || cell_type == "not" ? 1 : 2;
+    for (std::string prev : gate.inputs()) {
+      adj[prev].push_back(curr);
+      radj[curr].push_back(prev);
+    }
+    driver[curr] = gate.output();
+    gates[curr] = gate;
+
+    GATE gate_type = GATE::BUF;
+    // clang-format off
+    if      (cell_type == "not")  gate_type = GATE::NOT;
+    else if (cell_type == "or")   gate_type = GATE::OR;
+    else if (cell_type == "and")  gate_type = GATE::AND;
+    else if (cell_type == "nor")  gate_type = GATE::NOR;
+    else if (cell_type == "nand") gate_type = GATE::NAND;
+    else if (cell_type == "xor")  gate_type = GATE::XOR;
+    else if (cell_type == "xnor") gate_type = GATE::XNOR;
+    // clang-format on
+    types[curr] = gate_type;
+  }
+
+  for (std::string net : input_ports_) {
+    set_prob[net] = 0.5;
+    for (std::string gate : adj[net]) {
+      if (--deps[gate] == 0) {
+        queue.push(gate);
+      }
+    }
+  }
+
+  double dynamic_power = 0.0;
+  while (!queue.empty()) {
+    const std::string gate = queue.front();
+    queue.pop();
+    std::vector<double> P;
+    for (std::string inet : radj[gate]) P.push_back(set_prob[inet]);
+
+    // std::cout << gate << " | ";
+    // for (auto x : P) std::cout << x << " ";
+    // std::cout << "\n";
+
+    double p = 0;
+    // clang-format off
+    switch (types[gate] & 14) {
+      case GATE::BUF: p = P[0]; break;
+      case GATE::OR:  p = 1 - (1 - P[0]) * (1 - P[1]); break;
+      case GATE::AND: p = P[0] * P[1]; break;
+      case GATE::XOR: p = P[0] + P[1] - (2 * P[0] * P[1]); break;
+    }
+    // clang-format on
+    if (types[gate] & 1) p = 1.0 - p;
+    set_prob[driver[gate]] = p;
+
+    double q = 2 * p * (1 - p);
+    dynamic_power += q * lib.GetCell(gates[gate].cell()).leakage_power();
+
+    for (std::string v : adj[driver[gate]]) {
+      if (--deps[v] == 0) {
+        queue.push(v);
+      }
+    }
+  }
+  return dynamic_power;
+}
 
 void Netlist::add_module(std::string &&name) {
   module_name_ = std::move(name);

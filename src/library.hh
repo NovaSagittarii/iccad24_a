@@ -15,9 +15,22 @@ class Library {
  public:
   Library() {}
 
-  /// @brief Loads the file into the library. This handles parsing.
-  /// @param file
+  /**
+   * @brief Loads the file into the library. This handles parsing.
+   *
+   * @param file
+   */
   void Load(const std::filesystem::path& file);
+
+  /**
+   * @brief get cell attributes by cell name
+   * 
+   * @param cell_name 
+   * @return Cell object
+   */
+  const Cell& GetCell(const std::string cell_name) const {
+    return cells_.at(cell_name);
+  }
 
   const auto& cells() const { return cells_; }
 
