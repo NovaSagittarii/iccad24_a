@@ -39,8 +39,15 @@ verilog_parser.o: ../cost/verilog_parser.cc ../cost/verilog_parser.hh
 	$(CC17) $(VERILOG_INCLUDES) -I ../cost \
 		-c ../cost/verilog_parser.cc
 
-verilog_parser: verilog_parser.tab.o verilog_lexer.yy.o \
-	verilog_parser.o library.o cell.o netlist.o
+# verilog_parser: verilog_parser.tab.o verilog_lexer.yy.o \
+# 	verilog_parser.o library.o cell.o netlist.o
+# 	$(CC17) -o $@ $^
+
+simple_verilog_driver.o: $(SRC_PATH)/simple_verilog_driver.cc $(SRC_PATH)/simple_verilog_driver.hh
+	$(CC17) $(VERILOG_INCLUDES) -c $(SRC_PATH)/simple_verilog_driver.cc -o $@
+
+verilog_parser: verilog_parser.o library.o cell.o netlist.o \
+	simple_verilog_driver.o 
 	$(CC17) -o $@ $^
 
 ###

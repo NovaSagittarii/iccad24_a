@@ -5,7 +5,8 @@
 #include <filesystem>
 #include <map>
 
-#include "verilog_driver.hpp"  // verilog parser library
+// #include "verilog_driver.hpp"  // verilog parser library
+#include "simple_verilog_driver.hh"  // verilog parser library (reduced functionality)
 
 /**
  * @brief Represents a netlist, supports various netlist queries.
@@ -25,8 +26,8 @@ class Netlist : protected verilog::ParserVerilogInterface {
 
   /**
    * @brief Returns constraints as a 3-tuple
-   * 
-   * @return const std::array<double, 3> 
+   *
+   * @return const std::array<double, 3>
    * <`clock_period`, `area_constraint`, `power_constraint`>
    */
   const std::array<double, 3> GetConstraints() const {

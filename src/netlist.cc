@@ -7,7 +7,7 @@ void Netlist::Load(const std::filesystem::__cxx11::path &file) { read(file); }
 void Netlist::add_module(std::string &&name) {
   module_name_ = std::move(name);
 
-  std::cout << module_name_ << std::endl;
+  // std::cout << module_name_ << std::endl;
   std::istringstream s(decode(module_name_, 1));
 
   /// TODO: validate decoded module name
@@ -32,12 +32,14 @@ void Netlist::add_port(verilog::Port &&port) {
 }
 
 void Netlist::add_net(verilog::Net &&net) {
+  // this isn't really needed, you can figure out nets from the instances
+
   // std::cout << "Net: " << net << '\n';
-  if (net.type == verilog::NetType::WIRE) {
-    for (std::string &name : net.names) {
-      wires_.push_back(name);
-    }
-  }
+  // if (net.type == verilog::NetType::WIRE) {
+  //   for (std::string &name : net.names) {
+  //     wires_.push_back(name);
+  //   }
+  // }
 }
 
 void Netlist::add_assignment(verilog::Assignment &&ast) {
