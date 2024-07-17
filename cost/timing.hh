@@ -41,7 +41,7 @@ double EndClock() {
  */
 void EndClockPrint(const std::string& label) {
   std::cout << std::fixed << std::setprecision(6);
-  std::cout << std::setw(10) << EndClock() << "ms" << std::endl;
+  std::cout << std::setw(10) << EndClock() << "ms" << " " << label << std::endl;
 }
 
 #endif  // COST_TIMING_HH_
