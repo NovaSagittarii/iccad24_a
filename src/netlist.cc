@@ -56,20 +56,20 @@ double Netlist::ComputeDynamicPower(const Library &lib) const {
   while (!queue.empty()) {
     const std::string gate = queue.front();
     queue.pop();
-    std::vector<double> P;
-    for (std::string inet : radj[gate]) P.push_back(set_prob[inet]);
 
-    // std::cout << gate << " | ";
-    // for (auto x : P) std::cout << x << " ";
-    // std::cout << "\n";
+    double x = 0, y = 0;
+    for (std::string inet : radj[gate]) {
+      std::swap(x, y);
+      x = set_prob[inet];
+    }
 
     double p = 0;
     // clang-format off
     switch (types[gate] & Cell::Type::kMaskBaseGate) {
-      case Cell::Type::kBuf: p = P[0]; break;
-      case Cell::Type::kOr:  p = 1 - (1 - P[0]) * (1 - P[1]); break;
-      case Cell::Type::kAnd: p = P[0] * P[1]; break;
-      case Cell::Type::kXor: p = P[0] + P[1] - (2 * P[0] * P[1]); break;
+      case Cell::Type::kBuf: p = x; break;
+      case Cell::Type::kOr:  p = 1 - (1 - x) * (1 - y); break;
+      case Cell::Type::kAnd: p = x * y; break;
+      case Cell::Type::kXor: p = x + y - (2 * x * y); break;
     }
     // clang-format on
     if (types[gate] & Cell::Type::kMaskInverted) p = 1.0 - p;
