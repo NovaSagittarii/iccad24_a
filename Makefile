@@ -35,18 +35,18 @@ netlist.o: $(SRC_PATH)/netlist.hh $(SRC_PATH)/netlist.cc
 cell.o: $(SRC_PATH)/cell.hh $(SRC_PATH)/cell.cc
 	$(CC17) -c $(SRC_PATH)/cell.cc
 
-verilog_parser.o: ../cost/verilog_parser.cc ../cost/verilog_parser.hh 
+cost_estimator.o: ../cost/cost_estimator.cc ../cost/cost_estimator.hh 
 	$(CC17) $(VERILOG_INCLUDES) -I ../cost \
-		-c ../cost/verilog_parser.cc
+		-c ../cost/cost_estimator.cc -o $@
 
-# verilog_parser: verilog_parser.tab.o verilog_lexer.yy.o \
-# 	verilog_parser.o library.o cell.o netlist.o
+# cost_estimator: verilog_parser.tab.o verilog_lexer.yy.o \
+# 	cost_estimator.o library.o cell.o netlist.o
 # 	$(CC17) -o $@ $^
 
 simple_verilog_driver.o: $(SRC_PATH)/simple_verilog_driver.cc $(SRC_PATH)/simple_verilog_driver.hh
 	$(CC17) $(VERILOG_INCLUDES) -c $(SRC_PATH)/simple_verilog_driver.cc -o $@
 
-verilog_parser: verilog_parser.o library.o cell.o netlist.o \
+cost_estimator: cost_estimator.o library.o cell.o netlist.o \
 	simple_verilog_driver.o 
 	$(CC17) -o $@ $^
 

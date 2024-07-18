@@ -4,7 +4,17 @@ void Cell::LoadProperty(const std::string& key, const std::string& value) {
   if (key == "cell_name") {
     name_ = value;
   } else if (key == "cell_type") {
-    type_ = value;
+    Cell::Type gate_type = Cell::Type::kUnknown;
+    // clang-format off
+    if      (value == "not")  gate_type = Cell::Type::kNot;
+    else if (value == "buf")  gate_type = Cell::Type::kBuf;
+    else if (value == "or")   gate_type = Cell::Type::kOr;
+    else if (value == "and")  gate_type = Cell::Type::kAnd;
+    else if (value == "nor")  gate_type = Cell::Type::kNor;
+    else if (value == "nand") gate_type = Cell::Type::kNand;
+    else if (value == "xor")  gate_type = Cell::Type::kXor;
+    else if (value == "xnor") gate_type = Cell::Type::kXnor;
+    type_ = gate_type;
   } else {
     if (key.back() == 'i') {
       int x = std::stoi(value);

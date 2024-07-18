@@ -18,13 +18,34 @@ class Cell {
    */
   void LoadProperty(const std::string& key, const std::string& value);
 
-  const std::string& name() const { return name_; }
-  const std::string& type() const { return type_; }
+  const auto& name() const { return name_; }
+  const auto& type() const { return type_; }
   const auto& leakage_power() const { return leakage_power_; }
   const auto& area() const { return area_; }
 
+  /**
+   * @brief enumerable for cell types
+   * x&1 ~ inverted, x&8 ~ one-input
+   */
+  enum Type {
+    kUnknown = 0,
+    kOr = 2,
+    kNor = 3,
+    kAnd = 4,
+    kNand = 5,
+    kXor = 6,
+    kXnor = 7,
+    kBuf = 24,
+    kNot = 25,
+
+    kMaskInverted = 1,  // if (type & Type::kMaskInverted) type is inverted
+    kMaskUnary = 8,     // if (type & Type::kMaskUnary) type is unary input gate
+    kMaskBaseGate = 2 | 4 | 6 | 24,  // removes the isInverted bit
+  };
+
  private:
-  std::string name_, type_;
+  std::string name_;
+  Type type_;
   std::vector<double> f_properties_;
   std::vector<int> i_properties_;
 

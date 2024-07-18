@@ -12,33 +12,22 @@ double Netlist::ComputeDynamicPower(const Library &lib) const {
   std::map<std::string, std::vector<std::string>> radj;
   std::map<std::string, std::string> driver;  // map<gate, net>
   std::map<std::string, int> deps;            // map<gate, remaining deps>
-  std::map<std::string, GATE> types;          // map<gate, gate_type>
+  std::map<std::string, Cell::Type> types;          // map<gate, gate_type>
   std::map<std::string, double> set_prob;     // map<net, set_prob>
   std::queue<std::string> queue;              // things ready for processing
   std::map<std::string, Gate> gates;
 
   for (auto gate : gates_) {
-    const std::string cell_type = lib.GetCell(gate.cell()).type();
+    const Cell::Type cell_type = lib.GetCell(gate.cell()).type();
     const std::string curr = gate.name();
-    deps[curr] = cell_type == "buf" || cell_type == "not" ? 1 : 2;
+    deps[curr] = (cell_type & Cell::Type::kMaskUnary) ? 1 : 2;
     for (std::string prev : gate.inputs()) {
       adj[prev].push_back(curr);
       radj[curr].push_back(prev);
     }
     driver[curr] = gate.output();
     gates[curr] = gate;
-
-    GATE gate_type = GATE::BUF;
-    // clang-format off
-    if      (cell_type == "not")  gate_type = GATE::NOT;
-    else if (cell_type == "or")   gate_type = GATE::OR;
-    else if (cell_type == "and")  gate_type = GATE::AND;
-    else if (cell_type == "nor")  gate_type = GATE::NOR;
-    else if (cell_type == "nand") gate_type = GATE::NAND;
-    else if (cell_type == "xor")  gate_type = GATE::XOR;
-    else if (cell_type == "xnor") gate_type = GATE::XNOR;
-    // clang-format on
-    types[curr] = gate_type;
+    types[curr] = cell_type;
   }
 
   for (std::string net : input_ports_) {
@@ -63,14 +52,14 @@ double Netlist::ComputeDynamicPower(const Library &lib) const {
 
     double p = 0;
     // clang-format off
-    switch (types[gate] & 14) {
-      case GATE::BUF: p = P[0]; break;
-      case GATE::OR:  p = 1 - (1 - P[0]) * (1 - P[1]); break;
-      case GATE::AND: p = P[0] * P[1]; break;
-      case GATE::XOR: p = P[0] + P[1] - (2 * P[0] * P[1]); break;
+    switch (types[gate] & Cell::Type::kMaskBaseGate) {
+      case Cell::Type::kBuf: p = P[0]; break;
+      case Cell::Type::kOr:  p = 1 - (1 - P[0]) * (1 - P[1]); break;
+      case Cell::Type::kAnd: p = P[0] * P[1]; break;
+      case Cell::Type::kXor: p = P[0] + P[1] - (2 * P[0] * P[1]); break;
     }
     // clang-format on
-    if (types[gate] & 1) p = 1.0 - p;
+    if (types[gate] & Cell::Type::kMaskInverted) p = 1.0 - p;
     set_prob[driver[gate]] = p;
 
     double q = 2 * p * (1 - p);

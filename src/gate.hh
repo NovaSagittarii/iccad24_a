@@ -4,21 +4,6 @@
 #include <string>
 #include <vector>
 
-/**
- * @brief enumerable for gate types
- * x&0 ~ inverted, x&8 ~ one-input
- */
-enum GATE {
-  BUF = 8,
-  NOT = 9,
-  OR = 0,
-  NOR = 1,
-  AND = 2,
-  NAND = 3,
-  XOR = 4,
-  XNOR = 5,
-};
-
 class Gate {
  public:
   Gate() {}
