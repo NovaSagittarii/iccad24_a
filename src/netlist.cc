@@ -2,6 +2,7 @@
 
 #include <queue>
 #include <sstream>
+#include <unordered_map>
 
 void Netlist::Load(const std::filesystem::__cxx11::path &file) { read(file); }
 
@@ -20,15 +21,15 @@ void Netlist::LoadLibrary(Library &lib) {
 
 double Netlist::ComputeDynamicPower(const Library &lib) const {
   // map<net, vector<gate>>
-  std::map<std::string, std::vector<std::string>> adj;
+  std::unordered_map<std::string, std::vector<std::string>> adj;
   // map<gate, vector<net>>
-  std::map<std::string, std::vector<std::string>> radj;
-  std::map<std::string, std::string> driver;  // map<gate, net>
-  std::map<std::string, int> deps;            // map<gate, remaining deps>
-  std::map<std::string, Cell::Type> types;    // map<gate, gate_type>
-  std::map<std::string, double> set_prob;     // map<net, set_prob>
-  std::queue<std::string> queue;              // things ready for processing
-  std::map<std::string, Gate> gates;
+  std::unordered_map<std::string, std::vector<std::string>> radj;
+  std::unordered_map<std::string, std::string> driver;  // map<gate, net>
+  std::unordered_map<std::string, int> deps;  // map<gate, remaining deps>
+  std::unordered_map<std::string, Cell::Type> types;  // map<gate, gate_type>
+  std::unordered_map<std::string, double> set_prob;   // map<net, set_prob>
+  std::queue<std::string> queue;  // things ready for processing
+  std::unordered_map<std::string, Gate> gates;
 
   for (auto gate : gates_) {
     const Cell::Type cell_type = gate.cell().type();
