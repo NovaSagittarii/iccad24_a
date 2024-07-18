@@ -20,6 +20,7 @@ void CostFunction::LoadLibrary(const std::filesystem::path &file) {
 
 double CostFunction::Evaluate() {
   StartClock();
+  StartClock();
   double area = 0, power = 0;
   for (auto [cell_name, cells_used] : netlist_.cell_count()) {
     const auto &cell = library_.cells().at(cell_name);
@@ -27,8 +28,12 @@ double CostFunction::Evaluate() {
     power += cell.leakage_power() * cells_used;
   }
   auto [c0, a0, p0] = netlist_.GetConstraints();
+  EndClockPrint("<eval:[area power]>");
 
+  StartClock();
   double dynamic_power = netlist_.ComputeDynamicPower(library_);
+  EndClockPrint("<eval:[dyn_power]>");
+
   std::cout << std::fixed << std::setprecision(26);
   std::cout << "area      = " << area << "\n"
             << "power     = " << power << "\n"

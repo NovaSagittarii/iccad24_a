@@ -144,10 +144,10 @@ void Netlist::add_instance(verilog::Instance &&inst) {
     pins.push_back(std::get<std::string>(net.front()));
   }
 
-  Gate gate(std::string(inst.inst_name), inst.module_name, pins.back());
+  Gate gate(inst.inst_name, inst.module_name, pins.back());
   pins.pop_back();
   for (std::string pin : pins) gate.AddInput(pin);
-  gates_.push_back(gate);
+  gates_.push_back(std::move(gate));
 
   // pin names is just the pin labels like A, B, Y (not used)
   // for (auto &x : inst.pin_names) std::cout << std::get<std::string>(x) <<

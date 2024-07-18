@@ -62,7 +62,7 @@ void verilog::ParserVerilogInterface::read(const std::filesystem::path& path) {
               input_port.names.push_back(word);
               if (final_item) {
                 stage = PARSER_STAGE::IDLE;
-                add_port(verilog::Port(input_port));
+                add_port(std::move(input_port));
               }
               break;
             case PARSER_STAGE::PORT_OUTPUT:
@@ -70,7 +70,7 @@ void verilog::ParserVerilogInterface::read(const std::filesystem::path& path) {
               output_port.names.push_back(word);
               if (final_item) {
                 stage = PARSER_STAGE::PORT_WIRE;
-                add_port(verilog::Port(output_port));
+                add_port(std::move(output_port));
               }
               break;
             case PARSER_STAGE::PORT_WIRE:
@@ -101,7 +101,7 @@ void verilog::ParserVerilogInterface::read(const std::filesystem::path& path) {
             net.push_back(word);
             inst.net_names.push_back(net);
           }
-          add_instance(verilog::Instance(inst));
+          add_instance(std::move(inst));
         }
         break;
     }
