@@ -6,10 +6,9 @@
 #include <map>
 
 // #include "verilog_driver.hpp"  // verilog parser library
-#include "simple_verilog_driver.hh"  // verilog parser library (reduced functionality)
-
-#include "library.hh"
 #include "gate.hh"
+#include "library.hh"
+#include "simple_verilog_driver.hh"  // verilog parser library (reduced functionality)
 
 /**
  * @brief Represents a netlist, supports various netlist queries.
@@ -23,12 +22,19 @@ class Netlist : protected verilog::ParserVerilogInterface {
   void Load(const std::filesystem::__cxx11::path &file);
 
   /**
+   * @brief Sets the cell attribute data for every gate based on the library.
+   *
+   * @param lib library to load
+   */
+  void LoadLibrary(Library &lib);
+
+  /**
    * @brief Computes dynamic power of the design.
-   * 
+   *
    * @param lib library to use
    * @return double dynamic power
    */
-  double ComputeDynamicPower(const Library& lib) const;
+  double ComputeDynamicPower(const Library &lib) const;
 
   const auto cell_count() const { return cell_count_; }
   const auto clock_period() const { return clock_period_; }

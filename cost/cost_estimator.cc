@@ -14,6 +14,7 @@ void CostFunction::LoadNetlist(const std::filesystem::path &file) {
 void CostFunction::LoadLibrary(const std::filesystem::path &file) {
   StartClock();
   library_.Load(file);
+  netlist_.LoadLibrary(library_);
   EndClockPrint("<load:library>");
 }
 

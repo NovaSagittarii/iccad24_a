@@ -32,6 +32,7 @@ class Library {
     return cells_.at(cell_name);
   }
 
+  auto& cells() { return cells_; }
   const auto& cells() const { return cells_; }
 
  private:

@@ -5,6 +5,19 @@
 
 void Netlist::Load(const std::filesystem::__cxx11::path &file) { read(file); }
 
+void Netlist::LoadLibrary(Library &lib) {
+  std::map<std::string, Cell> &cells = lib.cells();
+  for (Gate &gate : gates_) {
+    const std::string &cell_name = gate.cell_name();
+    if (cells.count(cell_name)) {
+      gate.set_cell(cells.at(cell_name));
+    } else {
+      printf("Missing cell type %s for gate %s", cell_name, gate.name());
+      throw std::logic_error("Missing cell type in library");
+    }
+  }
+}
+
 double Netlist::ComputeDynamicPower(const Library &lib) const {
   // map<net, vector<gate>>
   std::map<std::string, std::vector<std::string>> adj;
@@ -12,13 +25,13 @@ double Netlist::ComputeDynamicPower(const Library &lib) const {
   std::map<std::string, std::vector<std::string>> radj;
   std::map<std::string, std::string> driver;  // map<gate, net>
   std::map<std::string, int> deps;            // map<gate, remaining deps>
-  std::map<std::string, Cell::Type> types;          // map<gate, gate_type>
+  std::map<std::string, Cell::Type> types;    // map<gate, gate_type>
   std::map<std::string, double> set_prob;     // map<net, set_prob>
   std::queue<std::string> queue;              // things ready for processing
   std::map<std::string, Gate> gates;
 
   for (auto gate : gates_) {
-    const Cell::Type cell_type = lib.GetCell(gate.cell()).type();
+    const Cell::Type cell_type = gate.cell().type();
     const std::string curr = gate.name();
     deps[curr] = (cell_type & Cell::Type::kMaskUnary) ? 1 : 2;
     for (std::string prev : gate.inputs()) {
@@ -63,7 +76,7 @@ double Netlist::ComputeDynamicPower(const Library &lib) const {
     set_prob[driver[gate]] = p;
 
     double q = 2 * p * (1 - p);
-    dynamic_power += q * lib.GetCell(gates[gate].cell()).leakage_power();
+    dynamic_power += q * gates[gate].cell().leakage_power();
 
     for (std::string v : adj[driver[gate]]) {
       if (--deps[v] == 0) {
