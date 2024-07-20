@@ -4,5 +4,6 @@ build/
 external/*/**
 
 **/*.v
+**/*.aig
 **/*.txt
 **/*.json
