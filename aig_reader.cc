@@ -43,12 +43,12 @@ class custom_aiger_reader : public aiger_reader {
     g_.dep.assign(m, {-1, -1});
   }
   void on_input(u32 index, u32 lit) const override {
-    // printf("[p] inp %i %i\n", index, lit);
+    printf("[p] inp %i %i\n", index, lit);
     lit -= 2;
     g_.inputs[index] = lit;
   }
   void on_output(u32 index, u32 lit) const override {
-    // printf("[p] out %i %i\n", index, lit);
+    printf("[p] out %i %i\n", index, lit);
     lit -= 2;
     g_.outputs[index] = lit;
   }
@@ -60,6 +60,15 @@ class custom_aiger_reader : public aiger_reader {
            right_lit);
     if (left_lit > right_lit) std::swap(left_lit, right_lit);
     g_.dep[index] = {(int)left_lit, (int)right_lit};
+  }
+  void on_input_name(uint32_t pos, const std::string& name) const override {
+    printf("[p] i_name %i %s\n", pos, name.c_str());
+  }
+  void on_output_name(uint32_t pos, const std::string& name) const override {
+    printf("[p] o_name %i %s\n", pos, name.c_str());
+  }
+  void on_comment(const std::string& comment) const override {
+    printf("[c] %s\n", comment.c_str());
   }
 };
 

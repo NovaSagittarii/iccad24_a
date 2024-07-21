@@ -7,6 +7,7 @@ CC_FLAGS = -Wall -Wextra -pedantic -O2 -Wshadow -Wformat=2 \
 	-fsanitize=undefined -fno-sanitize-recover -fstack-protector
 CC = g++ -std=c++17 $(CC_FLAGS) -I $(SRC_PATH)
 CC17 = g++ -std=c++17 -O2 -I $(SRC_PATH)
+CC20 = g++ -std=c++20 -O2 -I $(SRC_PATH)
 
 SRC_PATH = ../src
 
@@ -23,6 +24,25 @@ VERILOG_INCLUDES = -I $(VERILOG_OUTPUT_PATH) -I $(VERILOG_PARSER_SRC_PATH)
 
 JSON_SRC_PATH = ../external/json/include
 JSON_INCLUDES = -I $(JSON_SRC_PATH)
+
+LORINA_SRC_PATH = ../external/lorina
+LORINA_INCLUDES = -I $(LORINA_SRC_PATH)/include -I $(LORINA_SRC_PATH)/lib/fmt
+
+aig_reader.o: $(SRC_PATH)/aig_reader.cc $(SRC_PATH)/aig_reader.hh
+	$(CC17) $(LORINA_INCLUDES) \
+		-c $(SRC_PATH)/aig_reader.cc -o $@
+
+aig.o: $(SRC_PATH)/aig.cc $(SRC_PATH)/aig.hh
+	$(CC17) $(LORINA_INCLUDES) \
+		-c $(SRC_PATH)/aig.cc -o $@
+
+iterative_technology_mapper.o: $(SRC_PATH)/iterative_technology_mapper.cc \
+	$(SRC_PATH)/iterative_technology_mapper.hh
+	$(CC17) $(LORINA_INCLUDES) \
+		-c $(SRC_PATH)/iterative_technology_mapper.cc -o $@
+
+itm: iterative_technology_mapper.o aig.o aig_reader.o cell.o library.o
+	$(CC17) -o $@ $^
 
 library.o: $(SRC_PATH)/library.hh $(SRC_PATH)/library.cc
 	$(CC17) $(JSON_INCLUDES) -I $(SRC_PATH) \

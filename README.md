@@ -4,7 +4,7 @@
 ## Dependencies
 ```sh
 apt update
-apt install make flex bison g++
+apt install make flex bison g++ libreadline-dev
 git submodule update --init --recursive
 mkdir build -p
 ```

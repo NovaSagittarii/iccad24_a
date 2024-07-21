@@ -3,7 +3,9 @@
 build/
 external/*/**
 
+**/cost_estimator_*
 **/*.v
 **/*.aig
+**/*.out
 **/*.txt
 **/*.json
