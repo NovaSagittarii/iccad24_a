@@ -39,6 +39,11 @@ double CostFunction::Evaluate() {
             << "power     = " << power << "\n"
             << "dyn_power = " << dynamic_power << std::endl;
 
+  
+  std::cout << "clock_period     = " << c0 << "\n";
+  std::cout << "area_constraint  = " << a0 << "\n";
+  std::cout << "power_constraint = " << p0 << "\n";
+
   double cost = area * (power + dynamic_power);
   if (area >= a0 || (dynamic_power + p0 >= 0 && power >= p0)) {
     cost += 2e7;
