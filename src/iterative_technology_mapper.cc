@@ -11,6 +11,11 @@ const T choice(const std::vector<T>& arr) {
   return arr.at(std::rand() % arr.size());
 }
 
+template <class T>
+const T* choice_ptr(const std::vector<T>& arr) {
+  return &arr.at(std::rand() % arr.size());
+}
+
 void IterativeTechnologyMapper::WriteMapping(
     const std::filesystem::path& file) const {
   std::ofstream fout(file);
@@ -292,8 +297,8 @@ void IterativeTechnologyMapper::FindPrimitives() {
 }
 
 void IterativeTechnologyMapper::AddRandomGate() {
-  const auto& g = choice(candidates_);
-  int gate_id = AddBinaryGate(g);
+  const auto g_ptr = choice_ptr(candidates_);
+  int gate_id = AddBinaryGate(g_ptr);
   if (gate_id != -1) {
     added_gates_.push_back(gate_id);
   }
@@ -312,11 +317,11 @@ int IterativeTechnologyMapper::AddUnaryGate(const GateMapping& gate) {
 
 void IterativeTechnologyMapper::RemoveUnaryGate(int gate_id) {}
 
-int IterativeTechnologyMapper::AddBinaryGate(const GateMapping& mapping) {
+int IterativeTechnologyMapper::AddBinaryGate(const GateMapping* mapping) {
   // ensure there is no output overlap first
   // remember, **one** driver per net!
   // its a waste for multiple drivers anyways
-  if (aig_nodes_[mapping.y].covered_by != -1) return -1;
+  if (aig_nodes_[mapping->y].covered_by != -1) return -1;
 
   // this checks for intermediate overlapping
   // for (auto i : mapping.covers) {
@@ -334,16 +339,16 @@ int IterativeTechnologyMapper::AddBinaryGate(const GateMapping& mapping) {
   }
 
   // pick a random cell
-  const auto cell = choice(library_.GetCellsByType(mapping.type));
+  const auto cell = choice(library_.GetCellsByType(mapping->type));
 
   // allocate
   auto& gate = gates_[gate_id];
   gate.active = true;
   gate.cell = cell;
-  gate.a = mapping.a;
-  gate.b = mapping.b;
-  gate.y = mapping.y;
-  aig_gates_[gate_id].mapping = &mapping;
+  gate.a = mapping->a;
+  gate.b = mapping->b;
+  gate.y = mapping->y;
+  aig_gates_[gate_id].mapping = mapping;
 
   // update dependencies
   auto& aig_node = aig_nodes_[gate.y];
@@ -361,7 +366,7 @@ int IterativeTechnologyMapper::AddBinaryGate(const GateMapping& mapping) {
   double leak = cell->leakage_power();
   area_ += cell->area();
   power_ += leak;
-  dynamic_power_ += leak * nodes_[mapping.y].q;
+  dynamic_power_ += leak * nodes_[mapping->y].q;
 
   return gate_id;
 }
@@ -474,7 +479,14 @@ int32_t main() {
   it.WriteMapping("a1.txt");
   it.WriteVerilogABC("a1.v");
   std::srand(0);
-  for (int i = 0; i < 10000; ++i) it.AddRandomGate();
+  for (int i = 0; i < 10000; ++i) {
+    // const double area = it.area();
+    // const double power = it.power();
+    // const double dynamic_power = it.dynamic_power();
+
+    it.AddRandomGate();
+    it.UndoGateAdd();
+  }
   it.WriteMapping("a2.txt");
   it.WriteVerilogABC("a2.v");
 }

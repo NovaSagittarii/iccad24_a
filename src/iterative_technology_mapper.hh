@@ -92,7 +92,7 @@ class IterativeTechnologyMapper : public AIG {
    * @param mapping
    * @return int gate_id of the newly added gate, -1 if failed to add
    */
-  int AddBinaryGate(const GateMapping &mapping);
+  int AddBinaryGate(const GateMapping *mapping);
 
   /**
    * @brief Query to remove the binary gate at gates_[gate_id] from cost.
