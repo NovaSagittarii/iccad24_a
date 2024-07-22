@@ -207,12 +207,14 @@ void IterativeTechnologyMapper::FindPrimitives() {
       candidates_.push_back(GateMapping(x, y, znot, Cell::Type::kNand));
     }
 
+    // ensure both x,y are INV nodes
     if (x & y & 1) {
+      // change from INV node to the AND node
       x ^= 1;
       y ^= 1;
 
       /**
-       * nor takes the for
+       * nor takes the form
        *
        * NOR = !x !y
        */
@@ -225,23 +227,34 @@ void IterativeTechnologyMapper::FindPrimitives() {
         candidates_.push_back(GateMapping(x, y, znot, Cell::Type::kOr));
       }
 
+      /**
+       * xnor takes the form
+       *
+       * XNOR = !a !b
+       * a [AND] = !x y          -- 2x+1   2y
+       * b [AND] = x !y          -- 2x     2y+1
+       */
       if (nodes_[x].inputs[0] != -1 && nodes_[y].inputs[0] != -1) {
         // the two inverted inputs to AND are also output of AND
         auto [x1, y1] = nodes_[x].inputs;
         auto [x2, y2] = nodes_[y].inputs;
+        // make sure x* <= y* at all times
         if (x1 > y1) std::swap(x1, y1);
         if (x2 > y2) std::swap(x2, y2);
-        if (x1 ^ x2 == 1 && y1 ^ y2 == 1 && x1 / 2 == x2 / 2 &&
-            y1 / 2 == y2 / 2) {
+        // x1 and x2 should differ by exactly 1 and come from same literal
+        // y1 and y2 (same relation as x1~x2)
+        // x1 and y1 also need to be different parity!
+        if ((x1 ^ x2) == 1 && (y1 ^ y2) == 1 && (x1 / 2 == x2 / 2) &&
+            (y1 / 2 == y2 / 2) && ((y1 - x1) & 1)) {
+          // *1 will be the non-inverted form
+          // *2 will be the inverted form
           x1 ^= (x1 & 1);
           y1 ^= (y1 & 1);
           x2 = x1 | 1;
           y2 = y1 | 1;
           ++xnor_ct;
-          continue;
           candidates_.push_back(GateMapping(x1, y1, z, Cell::Type::kXnor));
           candidates_.push_back(GateMapping(x2, y2, z, Cell::Type::kXnor));
-
           if (inv_read) {
             ++xor_ct;
             candidates_.push_back(GateMapping(x1, y1, znot, Cell::Type::kXor));
@@ -461,7 +474,7 @@ int32_t main() {
   it.WriteMapping("a1.txt");
   it.WriteVerilogABC("a1.v");
   std::srand(0);
-  for (int i = 0; i < 100; ++i) it.AddRandomGate();
+  for (int i = 0; i < 10000; ++i) it.AddRandomGate();
   it.WriteMapping("a2.txt");
   it.WriteVerilogABC("a2.v");
 }
