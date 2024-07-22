@@ -32,6 +32,7 @@ void AIG::ComputeSetProbability() {
 }
 
 void AIG::ComputeSetProbabilityRecursive(int u) {
+  if (nodes_[u].set_prob != -1) return;
   if (u & 1 == 1) {  // is an Inverter
     ComputeSetProbabilityRecursive(u ^ 1);
     nodes_[u].set_prob = 1 - nodes_[u ^ 1].set_prob;

@@ -36,7 +36,14 @@ class IterativeTechnologyMapper : public AIG {
    *
    * @param file destination path
    */
-  void WriteMapping(const std::filesystem::path& file) const;
+  void WriteMapping(const std::filesystem::path &file) const;
+
+  /**
+   * @brief Writes the mapping in verilog for ABC to read -- gate names omitted.
+   *
+   * @param file destination path
+   */
+  void WriteVerilogABC(const std::filesystem::path &file) const;
 
   /**
    * @brief Picks a random primitive from the list and adds it.
@@ -50,20 +57,20 @@ class IterativeTechnologyMapper : public AIG {
 
  private:
   struct GateMapping {
-    GateMapping(int a, int b, int y, Cell::Type type,
-                const std::vector<int> &covers)
-        : a(a), b(b), y(y), type(type), covers(covers) {}
-    int a = -1;               // input A
-    int b = -1;               // input B (not used in unary gates)
-    int y = -1;               // output Y
-    Cell::Type type;          // gate type
-    std::vector<int> covers;  // what literals this replaces
+    GateMapping(int a, int b, int y, Cell::Type type)
+        : a(a), b(b), y(y), type(type) {}
+    int a = -1;       // input A
+    int b = -1;       // input B (not used in unary gates)
+    int y = -1;       // output Y
+    Cell::Type type;  // gate type
+    // std::vector<int> covers;  // what literals this replaces
   };
 
   struct AIGAuxiliary {          // holds extra info about AIG nodes
-    const Cell *cell = nullptr;  // default cell
+    const Cell *cell = nullptr;  // default cell -- nullptr for input nodes
     bool active = false;         // whether its currently summed into cost
     int covered_by = -1;         // index of the Gate this AIGNode is covered by
+    int deps = 0;  // how many nodes depend on this (outdegree) after mapping
   };
 
   struct GateAuxiliary {                   // holds extra info about AIG gates
@@ -107,6 +114,24 @@ class IterativeTechnologyMapper : public AIG {
    * @param variable which AIG node to uncover
    */
   void UncoverAIG(int variable);
+
+  /**
+   * Removes outdegree from the AIG node.
+   * Something no longer depends on `variable`.
+   *
+   * This is called when you map
+   * a gate onto the AIG, while the output gets replaced entirely, the inputs
+   * may still be read by other nets, so decrement the input net by one. When
+   * the outdegree reaches zero, then the node can be pruned.
+   */
+  void RemoveDependency(int variable);
+
+  /**
+   * @brief Add outdegree to AIG node. Something new now depends on `variable`.
+   *
+   * @param variable
+   */
+  void AddDependency(int variable);
 
   double area_;           // area of the current mapping
   double power_;          // power of current mapping

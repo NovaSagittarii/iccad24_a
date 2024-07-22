@@ -40,7 +40,10 @@ class AIG {
    * @param index index into the `inputs_` array
    * @param variable 0-indexed variable/literal of what the input is
    */
-  void SetInputPort(int index, int variable) { inputs_[index] = variable; }
+  void SetInputPort(int index, int variable) {
+    inputs_[index] = variable;
+    nodes_[variable].is_io = true;
+  }
 
   /**
    * @brief Update `outputs_[index] = variable;`
@@ -48,7 +51,10 @@ class AIG {
    * @param index index into the `outputs_` array
    * @param variable 0-indexed variable/literal of what the input is
    */
-  void SetOutputPort(int index, int variable) { outputs_[index] = variable; }
+  void SetOutputPort(int index, int variable) {
+    outputs_[index] = variable;
+    nodes_[variable].is_io = true;
+  }
 
   /**
    * @brief Update variable (AND gate)'s dependencies.
@@ -96,10 +102,10 @@ class AIG {
    * whether it is an AND gate or INVERTER.
    */
   struct Node {
-    double set_prob;      // set probability (used in dynamic power)
-    double q;             // leakage coefficient used in dynamic power q=2p(1-p)
-    int out_degree = 0;   // how many other nodes depend on this
-    int name_index = -1;  // index of net name, -1 if not an I/O port
+    double set_prob = -1;  // set probability (used in dynamic power)
+    double q;            // leakage coefficient used in dynamic power q=2p(1-p)
+    int out_degree = 0;  // how many other nodes depend on this
+    bool is_io = false;  // is I/O port?
 
     /**
      * @brief The inputs (dependencies) of the And gate. When this represents

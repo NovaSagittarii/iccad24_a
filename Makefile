@@ -11,12 +11,18 @@ CC20 = g++ -std=c++20 -O2 -I $(SRC_PATH)
 
 SRC_PATH = ../src
 
+.PHONY: all clean main run_itm ece
 all: main
 clean:
 	rm main **/*.o
 
 main: ../src/main.cc
 	$(CC) -o main ../src/main.cc
+
+run_itm:
+	(cd build; make -f ../Makefile itm) && ./build/itm
+ece:
+	echo "read_verilog a1.v; cec a2.v" | ../abc/abc
 
 VERILOG_PARSER_SRC_PATH = ../external/Parser-Verilog/parser-verilog
 VERILOG_OUTPUT_PATH = verilog_parser_tmp
