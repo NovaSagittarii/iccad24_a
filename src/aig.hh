@@ -6,9 +6,12 @@
 #include <filesystem>
 #include <vector>
 
+#include "cell.hh"
+
 /**
  * @brief Represents a sequential And-Inverter Graph. Handles read/write, but
- * mainly holds data for IterativeTechnologyMapper to access.
+ * mainly holds data for IterativeTechnologyMapper to access. This does not
+ * interact with the mapping itself.
  */
 class AIG {
  public:
@@ -20,15 +23,6 @@ class AIG {
    * @param file source path
    */
   void Load(const std::filesystem::path& file);
-
-  /**
-   * @brief Writes the mapping (in the weird verilog output form) to a file.
-   * Note: In weird verilog, the output port is the last parameter instead of
-   * the first parameter.
-   *
-   * @param file destination path
-   */
-  void Write(const std::filesystem::path& file) const;
 
   /**
    * @brief Loads the header
@@ -83,8 +77,7 @@ class AIG {
    * @param name
    */
   void SetInputNetName(int input_index, const std::string& name) {
-    nodes_[inputs_[input_index]].name_index = net_names_.size();
-    net_names_.push_back(name);
+    net_names_[inputs_[input_index]] = name;
   }
 
   /**
@@ -94,8 +87,7 @@ class AIG {
    * @param name
    */
   void SetOutputNetName(int output_index, const std::string& name) {
-    nodes_[outputs_[output_index]].name_index = net_names_.size();
-    net_names_.push_back(name);
+    net_names_[outputs_[output_index]] = name;
   }
 
  protected:
@@ -106,7 +98,6 @@ class AIG {
   struct Node {
     double set_prob;      // set probability (used in dynamic power)
     double q;             // leakage coefficient used in dynamic power q=2p(1-p)
-    int covered_by = -1;  // index of the Gate this AIGNode is covered by
     int out_degree = 0;   // how many other nodes depend on this
     int name_index = -1;  // index of net name, -1 if not an I/O port
 
@@ -120,10 +111,12 @@ class AIG {
   /**
    * @brief Represents a gate mapping onto the AIG.
    */
-  class Gate {
-   public:
-   private:
-    bool active_ = false;
+  struct Gate {
+    bool active = false;         // whether it is used
+    const Cell* cell = nullptr;  // instance of what cell
+    int a;                       // input a (aig net)
+    int b;                       // input b -- value isn't used in unary gate
+    int y;                       // output y
   };
 
   /**
@@ -137,8 +130,10 @@ class AIG {
   int sz_o_;  // number of outputs
   int sz_a_;  // number of AND gates
 
-  std::vector<int> inputs_;   // variable name of the ith input
-  std::vector<int> outputs_;  // variable name of the ith output
+  std::vector<int> inputs_;      // variable name of the ith input
+  std::vector<int> outputs_;     // variable name of the ith output
+  std::string top_module_name_;  // name of the top module (used in export)
+  std::vector<std::string> net_names_;  // use same index as nodes_
 
   std::vector<Node> nodes_;
   std::vector<Gate> gates_;
@@ -156,9 +151,6 @@ class AIG {
    * @param u variable that is being currently computed
    */
   void ComputeSetProbabilityRecursive(int u);
-
-  std::string top_module_name_;  // name of the top module (used in export)
-  std::vector<std::string> net_names_;  // node name_index index into here
 };
 
 #endif  // SRC_AIG_HH_

@@ -1,5 +1,7 @@
 #include "aig_reader.hh"
 
+#include <sstream>
+
 void AIGReader::on_header(u64 m, u64 i, u64 l, u64 o, u64 a) const {
   // printf("[h] tot=%i i=%i l=%i o=%i a=%i\n", m, i, l, o, a);
   aig_.LoadHeader(m, i, o, a);
@@ -24,7 +26,7 @@ void AIGReader::on_and(u32 index, u32 left_lit, u32 right_lit) const {
   right_lit -= 2;
   // printf("[p] and %i(#%i) <= %i & %i\n", index, index * 2, left_lit,
   // right_lit);
-  aig_.SetNodeDependencies(index*2, left_lit, right_lit);
+  aig_.SetNodeDependencies(index * 2, left_lit, right_lit);
 }
 
 void AIGReader::on_input_name(u32 pos, const std::string& name) const {
@@ -36,5 +38,8 @@ void AIGReader::on_output_name(u32 pos, const std::string& name) const {
 }
 
 void AIGReader::on_comment(const std::string& comment) const {
-  aig_.SetModuleName(comment);
+  std::istringstream in(comment);
+  std::string module_name;
+  in >> module_name;
+  aig_.SetModuleName(module_name);
 }

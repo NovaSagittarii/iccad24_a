@@ -45,7 +45,7 @@ class Cell {
 
  private:
   std::string name_;
-  Type type_;
+  Type type_ = Type::kUnknown;
   std::vector<double> f_properties_;
   std::vector<int> i_properties_;
 

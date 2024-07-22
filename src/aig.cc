@@ -1,6 +1,6 @@
 #include "aig.hh"
 
-#define FMT_HEADER_ONLY // make sure FMT only gets compiled once
+#define FMT_HEADER_ONLY  // make sure FMT only gets compiled once
 #include "aig_reader.hh"
 
 void AIG::Load(const std::filesystem::path& file) {
@@ -9,8 +9,6 @@ void AIG::Load(const std::filesystem::path& file) {
   ComputeSetProbability();
   ComputeOutDegree();
 }
-
-void AIG::Write(const std::filesystem::path& file) const {}
 
 void AIG::LoadHeader(int v, int i, int o, int a) {
   sz_v_ = v;
@@ -21,7 +19,10 @@ void AIG::LoadHeader(int v, int i, int o, int a) {
   gates_.assign(v * 2, Gate());
   inputs_.assign(sz_i_, -1);
   outputs_.assign(sz_o_, -1);
-  net_names_.clear();
+
+  // initialize names
+  net_names_.assign(v * 2, "v");
+  for (int i = 0; i < v * 2; ++i) net_names_[i] += std::to_string(i);
 }
 
 void AIG::ComputeSetProbability() {
@@ -42,7 +43,9 @@ void AIG::ComputeSetProbabilityRecursive(int u) {
     assert(y != -1 && "Dependency y for And gate should exist.");
     ComputeSetProbabilityRecursive(x);
     ComputeSetProbabilityRecursive(y);
-    nodes_[u].set_prob = nodes_[x].set_prob * nodes_[y].set_prob;
+    double p = nodes_[x].set_prob * nodes_[y].set_prob;
+    nodes_[u].set_prob = p;
+    nodes_[u].q = 2 * p * (1.0 - p);
   }
 }
 

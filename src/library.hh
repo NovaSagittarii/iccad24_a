@@ -24,13 +24,21 @@ class Library {
 
   /**
    * @brief get cell attributes by cell name
-   * 
-   * @param cell_name 
+   *
+   * @param cell_name
    * @return Cell object
    */
   const Cell& GetCell(const std::string cell_name) const {
     return cells_.at(cell_name);
   }
+
+  /**
+   * @brief get a list of cells by type
+   *
+   * @param type
+   * @return const std::vector<const Cell*> cells in library that match the type
+   */
+  const std::vector<const Cell*> GetCellsByType(Cell::Type type) const;
 
   auto& cells() { return cells_; }
   const auto& cells() const { return cells_; }
