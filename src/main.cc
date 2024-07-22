@@ -36,7 +36,8 @@ double Evaluate() {
     + " -library " + library_path
     + " -netlist " + output_path
     + " -output " + cost_output_path
-    + " >/dev/null";
+    + " ";
+  std::cout << cmd << std::endl;
   
   StartClock();
   int result = std::system(cmd.c_str());
@@ -52,6 +53,8 @@ double Evaluate() {
   double cost = 1e300;
   fin >> dummy >> dummy >> cost;
   fin.close();
+
+  if (dummy != "cost") exit(1);
   return cost;
 }
 
@@ -120,8 +123,8 @@ int32_t main(int argc, char** argv) {
     std::string word;
     std::istringstream in(line);
     in >> word;
-    char type = word.back();
-    for (int i = 0; i < 2 && !word.empty(); ++i) word.pop_back();
+    char type = '1'; // word.back();
+    // for (int i = 0; i < 2 && !word.empty(); ++i) word.pop_back();
     if (kGates.count(word)) {
       line = "\t" + word + "_" + type + " ";
       body_idx.push_back(word.size() + 1 + 1); // the index to edit
@@ -130,12 +133,12 @@ int32_t main(int argc, char** argv) {
       std::vector<std::string> words;
       while (in >> word) words.push_back(word);
       // time to do the swap, 2 4 6
-      // if (words.size() > 6) std::swap(words[2], words[6]);
-      // else std::swap(words[2], words[4]);
+      if (words.size() > 6) std::swap(words[2], words[6]);
+      else std::swap(words[2], words[4]);
 
       for (auto &word : words) line += word + " ";
       body.push_back(line);
-    } else {
+    } else if (word.front() != '/') { // ignore comments
       header.push_back(line);
     }
   }
