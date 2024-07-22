@@ -4,8 +4,8 @@
 ## Usage
 ```sh
 # from project root directory
-cd build; make -f ../Makefile verilog_parser
-(cd build; make -f ../Makefile verilog_parser) && ./build/verilog_parser ./design1_map.v
+cd build; make -f ../Makefile cost_estimator
+(cd build; make -f ../Makefile cost_estimator) && ./build/cost_estimator ./design1_map.v
 ```
 
 With VS Code, you may need to add `${workspaceFolder}/**/include/**` to 
