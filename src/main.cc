@@ -36,8 +36,8 @@ double Evaluate() {
     + " -library " + library_path
     + " -netlist " + output_path
     + " -output " + cost_output_path
-    + " ";
-  std::cout << cmd << std::endl;
+    + " > /dev/null";
+  // std::cout << cmd << std::endl;
   
   StartClock();
   int result = std::system(cmd.c_str());
@@ -54,7 +54,6 @@ double Evaluate() {
   fin >> dummy >> dummy >> cost;
   fin.close();
 
-  if (dummy != "cost") exit(1);
   return cost;
 }
 
