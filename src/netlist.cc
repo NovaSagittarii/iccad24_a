@@ -67,7 +67,7 @@ double Netlist::ComputeDynamicPower(const Library &lib) const {
     double p = 0;
     // clang-format off
     switch (types[gate] & Cell::Type::kMaskBaseGate) {
-      case Cell::Type::kBuf: p = x; break;
+      case Cell::Type::kBuf: p = x + y; break;
       case Cell::Type::kOr:  p = 1 - (1 - x) * (1 - y); break;
       case Cell::Type::kAnd: p = x * y; break;
       case Cell::Type::kXor: p = x + y - (2 * x * y); break;

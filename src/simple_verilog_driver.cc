@@ -85,7 +85,7 @@ void verilog::ParserVerilogInterface::read(const std::filesystem::path& path) {
         // filter out empty lines
         while (!line.empty() && line.back() != ';') line.pop_back();
         if (!line.empty()) {
-          line.pop_back(); // remove the semicolon
+          line.pop_back();  // remove the semicolon
 
           // there's a gate
           in = std::istringstream(line);
@@ -97,6 +97,11 @@ void verilog::ParserVerilogInterface::read(const std::filesystem::path& path) {
           }
           for (int i = 0; i < 3 && in >> word; ++i) {
             if (word.back() == ',' || word.back() == ')') word.pop_back();
+            if (word.empty()) {
+              // dealing with too much whitespace " , "
+              --i;
+              continue;
+            }
             std::vector<verilog::NetConcat> net;
             net.push_back(word);
             inst.net_names.push_back(net);
