@@ -29,16 +29,18 @@ void SimulatedAnnealingMapper::Run(TemperatureSchedule temperature_schedule,
 
   for (int tn = 0; tn < runs; ++tn) {
     E = cost_estimator(*this);
+    bool write_ready = false;
     for (int it = 0; it < iterations; ++it) {
       // progress display BEGIN_SECTION
-      if (it % 100 == 0) {
+      if (it % 1000 == 0) {
+        write_ready = true;
         os_ << std::fixed << "epoch=" << std::setw(5) << tn
             << " iter=" << std::setw(10) << it << " T=" << std::setw(10)
             << std::setprecision(7) << T << std::scientific
             << " curr = " << std::setw(10) << E << " best = " << std::setw(10)
             << E_low << std::endl;
         time_t current_time = time(NULL);
-        if (current_time <= last_update + 10) {
+        if (it && current_time <= last_update + 10) {
           std::cout << "\u001b[1F\u001b[1K";
         } else {
           last_update = current_time;
@@ -59,6 +61,7 @@ void SimulatedAnnealingMapper::Run(TemperatureSchedule temperature_schedule,
         if (E < E_low) {  // best seen so far?
           E_low = E;
           WriteMapping(output_path_);
+          // if (write_ready) os_ << it << std::endl;
         }
       } else {
         // undo change
@@ -72,6 +75,7 @@ void SimulatedAnnealingMapper::Run(TemperatureSchedule temperature_schedule,
 
 int32_t main() {
   std::srand(0);
+  std::srand(std::time(NULL));
 
   SimulatedAnnealingMapper mapper("a_out.v", std::cout);
   mapper.Load("design1.aig");
@@ -91,6 +95,7 @@ int32_t main() {
     double penalty = 0;
     // if (area >= 500 || power > 0.15)
     //   penalty = 1e7 * (area / 500 + power / 0.15);
+    return area + power;
     return std::pow(penalty + (1 + area) * (1 + power + dynamic_power), 0.5);
   };
 
@@ -105,8 +110,32 @@ int32_t main() {
   };
 
   static Transition remove_random_gate = [](SAM& mapper, bool undo) -> void {
+    static const IterativeTechnologyMapper::GateMapping* mapping_ptr = 0;
     if (!undo) {
-      // mapper.RemoveBinaryGate()
+      mapping_ptr = nullptr;
+
+      // precompute this later
+      int mapped_gates = 0;
+      for (const auto& g : mapper.gates()) mapped_gates += g.active;
+      
+      if (mapped_gates == 0) return; // can't do anything
+
+      // can use something like a page table later?
+      int nth_gate = std::rand() % mapped_gates;
+      int g = 0;
+      while (nth_gate) {
+        nth_gate -= mapper.gates().at(g).active;
+        ++g;
+      }
+      
+      // update static variable
+      mapping_ptr = mapper.aig_gates().at(g).mapping;
+      mapper.RemoveBinaryGate(g);
+    } else {
+      // it's just null sometimes...
+      if (mapping_ptr) {
+        mapper.AddBinaryGate(mapping_ptr);
+      }
     }
   };
 
@@ -126,13 +155,13 @@ int32_t main() {
 
   const std::vector<SimulatedAnnealingMapper::Transition> transitions = {
       add_random_gate,
-      change_aig_gate,
+      // remove_random_gate,
+      // change_aig_gate,
   };
 
   // mapper.Run(temperature_schedule, cost, {add_random_gate}, 100, 1000);
-  mapper.Run(temperature_schedule, cost, {change_aig_gate}, 1, 1);
   mapper.Run(temperature_schedule, cost, {change_aig_gate}, 1e-2, 1e5);
-  mapper.Run(temperature_schedule, cost, transitions, 1e-2, 1e6);
+  mapper.Run(temperature_schedule, cost, transitions, 1, 1e4);
   // mapper.Run(temperature_schedule, cost, transitions, 0, 1e6);
   // mapper.Run(temperature_schedule, cost, {add_random_gate}, 100, 100000);
   mapper.WriteVerilogABC("a_logic_after.v");

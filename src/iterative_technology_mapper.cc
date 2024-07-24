@@ -69,7 +69,7 @@ void IterativeTechnologyMapper::WriteVerilogABC(
     const std::filesystem::path& file) const {
   std::ofstream fout(file);
 
-  for (int i = 0; i < sz_v_*2; ++i) {
+  for (int i = 0; i < sz_v_ * 2; ++i) {
     fout << "// " << net_names_[i] << " deps=" << aig_nodes_[i].deps << "\n";
   }
 
@@ -303,7 +303,11 @@ void IterativeTechnologyMapper::FindPrimitives() {
 
 void IterativeTechnologyMapper::AddRandomGate() {
   const auto g_ptr = choice_ptr(candidates_);
-  int gate_id = AddBinaryGate(g_ptr);
+  int gate_id = -1;
+  if (aig_nodes_[g_ptr->y].deps) {
+    // make sure something actually gonna read it?
+    gate_id = AddBinaryGate(g_ptr);
+  }
   added_gates_.push_back(gate_id);
 }
 

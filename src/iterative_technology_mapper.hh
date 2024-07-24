@@ -75,7 +75,9 @@ class IterativeTechnologyMapper : public AIG {
   void ChangeAIGNodeGate(int aig_variable, const Cell *new_cell);
 
   /**
-   * @brief Query at add the binary gate at gates_[gate_id] from cost.
+   * @brief Add the associated gate mapping. You can access it via
+   * `gates_[gate_id].mapping`. This also acts as an update-query for various
+   * statistics (power, area, etc.).
    *
    * @param mapping
    * @return int gate_id of the newly added gate, -1 if failed to add
