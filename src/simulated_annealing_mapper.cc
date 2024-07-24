@@ -31,7 +31,7 @@ void SimulatedAnnealingMapper::Run(TemperatureSchedule temperature_schedule,
     E = cost_estimator(*this);
     for (int it = 0; it < iterations; ++it) {
       // progress display BEGIN_SECTION
-      if (it % 1000 == 0) {
+      if (it % 100 == 0) {
         os_ << std::fixed << "epoch=" << std::setw(5) << tn
             << " iter=" << std::setw(10) << it << " T=" << std::setw(10)
             << std::setprecision(7) << T << std::scientific
@@ -129,8 +129,11 @@ int32_t main() {
       change_aig_gate,
   };
 
-  mapper.Run(temperature_schedule, cost, {add_random_gate}, 100, 100000);
-  mapper.Run(temperature_schedule, cost, {change_aig_gate}, 1, 10000);
-  // mapper.Run(temperature_schedule, cost, transitions, 10, 10000000);
+  // mapper.Run(temperature_schedule, cost, {add_random_gate}, 100, 1000);
+  mapper.Run(temperature_schedule, cost, {change_aig_gate}, 1, 1);
+  mapper.Run(temperature_schedule, cost, {change_aig_gate}, 1e-2, 1e4);
+  mapper.Run(temperature_schedule, cost, transitions, 1e-2, 1e6);
+  mapper.Run(temperature_schedule, cost, transitions, 0, 1e6);
+  // mapper.Run(temperature_schedule, cost, {add_random_gate}, 100, 100000);
   mapper.WriteVerilogABC("a_logic_after.v");
 }

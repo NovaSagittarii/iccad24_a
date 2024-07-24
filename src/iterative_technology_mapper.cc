@@ -1,6 +1,7 @@
 #include "iterative_technology_mapper.hh"
 
 #include <fstream>
+#include <iostream>
 
 #include "utils.hh"
 
@@ -179,6 +180,12 @@ void IterativeTechnologyMapper::Initialize() {
     // (a) + (b) ---AND---> (i*2)
     for (auto inp : nodes_[i * 2].inputs) AddDependency(inp);
   }
+
+  // for (int i = 0; i < sz_v_*2; ++i) {
+  //   std::cerr << aig_nodes_[i].deps << " ";
+  //   if (i % 20 == 19) std::cerr << "\n";
+  // }
+  // std::cerr << std::endl;
 }
 
 void IterativeTechnologyMapper::FindPrimitives() {

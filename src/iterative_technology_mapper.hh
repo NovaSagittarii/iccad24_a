@@ -146,9 +146,9 @@ class IterativeTechnologyMapper : public AIG {
    */
   void AddDependency(int variable);
 
-  double area_;           // area of the current mapping
-  double power_;          // power of current mapping
-  double dynamic_power_;  // dynamic power of current mapping
+  double area_ = 0;           // area of the current mapping
+  double power_ = 0;          // power of current mapping
+  double dynamic_power_ = 0;  // dynamic power of current mapping
   Library library_;
 
   std::vector<int> added_gates_;          // history of added gates (stack)

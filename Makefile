@@ -26,7 +26,7 @@ run_sa:
 run_itm:
 	(cd build; make -f ../Makefile itm) && ./build/itm
 ece:
-	echo "read_verilog a1.v; cec a2.v" | ../abc/abc
+	echo "read_verilog a_logic_after.v; cec a_logic_before.v" | ../abc/abc
 
 VERILOG_PARSER_SRC_PATH = ../external/Parser-Verilog/parser-verilog
 VERILOG_OUTPUT_PATH = verilog_parser_tmp
