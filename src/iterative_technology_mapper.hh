@@ -13,6 +13,16 @@ class IterativeTechnologyMapper : public AIG {
  public:
   IterativeTechnologyMapper() {}
 
+  struct GateMapping {
+    GateMapping(int a, int b, int y, Cell::Type type)
+        : a(a), b(b), y(y), type(type) {}
+    int a = -1;       // input A
+    int b = -1;       // input B (not used in unary gates)
+    int y = -1;       // output Y
+    Cell::Type type;  // gate type
+    // std::vector<int> covers;  // what literals this replaces
+  };
+
   /**
    * @brief Loads the library at the path into the cost function.
    * This should only be called once.
@@ -55,17 +65,35 @@ class IterativeTechnologyMapper : public AIG {
    */
   void UndoGateAdd();
 
- private:
-  struct GateMapping {
-    GateMapping(int a, int b, int y, Cell::Type type)
-        : a(a), b(b), y(y), type(type) {}
-    int a = -1;       // input A
-    int b = -1;       // input B (not used in unary gates)
-    int y = -1;       // output Y
-    Cell::Type type;  // gate type
-    // std::vector<int> covers;  // what literals this replaces
-  };
+  /**
+   * @brief Updates an AIG node's gate. If it is already active, stats will
+   * update as if removing then adding in a new gate.
+   *
+   * @param aig_variable
+   * @param new_cell
+   */
+  void ChangeAIGNodeGate(int aig_variable, const Cell *new_cell);
 
+  /**
+   * @brief Query at add the binary gate at gates_[gate_id] from cost.
+   *
+   * @param mapping
+   * @return int gate_id of the newly added gate, -1 if failed to add
+   */
+  int AddBinaryGate(const GateMapping *mapping);
+
+  /**
+   * @brief Query to remove the binary gate at gates_[gate_id] from cost.
+   *
+   * @param gate_id
+   */
+  void RemoveBinaryGate(int gate_id);
+
+  const auto &aig_nodes() const { return aig_nodes_; }  // see aig_nodes_
+  const auto &aig_gates() const { return aig_gates_; }  // see aig_gates_
+  const auto &library() const { return library_; }
+
+ private:
   struct AIGAuxiliary {          // holds extra info about AIG nodes
     const Cell *cell = nullptr;  // default cell -- nullptr for input nodes
     bool active = false;         // whether its currently summed into cost
@@ -85,21 +113,6 @@ class IterativeTechnologyMapper : public AIG {
   int AddUnaryGate(const GateMapping &mapping);
 
   void RemoveUnaryGate(int gate_id);
-
-  /**
-   * @brief Query at add the binary gate at gates_[gate_id] from cost.
-   *
-   * @param mapping
-   * @return int gate_id of the newly added gate, -1 if failed to add
-   */
-  int AddBinaryGate(const GateMapping *mapping);
-
-  /**
-   * @brief Query to remove the binary gate at gates_[gate_id] from cost.
-   *
-   * @param gate_id
-   */
-  void RemoveBinaryGate(int gate_id);
 
   /**
    * @brief Query to remove the base gate of the AIG node from the cost.

@@ -1,20 +1,8 @@
 #include "iterative_technology_mapper.hh"
 
 #include <fstream>
-#include <random>
 
-/**
- * randomly pick one from an array
- */
-template <class T>
-const T choice(const std::vector<T>& arr) {
-  return arr.at(std::rand() % arr.size());
-}
-
-template <class T>
-const T* choice_ptr(const std::vector<T>& arr) {
-  return &arr.at(std::rand() % arr.size());
-}
+#include "utils.hh"
 
 void IterativeTechnologyMapper::WriteMapping(
     const std::filesystem::path& file) const {
@@ -208,6 +196,7 @@ void IterativeTechnologyMapper::FindPrimitives() {
     bool inv_read = NAND.out_degree;  // does the NAND get read?
     and_ct += set_read;
     nand_ct += inv_read;
+    // candidates_.push_back(GateMapping(x, y, z, Cell::Type::kAnd));
     if (inv_read) {
       candidates_.push_back(GateMapping(x, y, znot, Cell::Type::kNand));
     }
@@ -299,16 +288,23 @@ void IterativeTechnologyMapper::FindPrimitives() {
 void IterativeTechnologyMapper::AddRandomGate() {
   const auto g_ptr = choice_ptr(candidates_);
   int gate_id = AddBinaryGate(g_ptr);
-  if (gate_id != -1) {
-    added_gates_.push_back(gate_id);
-  }
+  added_gates_.push_back(gate_id);
 }
 
 void IterativeTechnologyMapper::UndoGateAdd() {
   if (!added_gates_.empty()) {
+    if (added_gates_.back() == -1) return;
     RemoveBinaryGate(added_gates_.back());
     added_gates_.pop_back();
   }
+}
+
+void IterativeTechnologyMapper::ChangeAIGNodeGate(int aig_variable,
+                                                  const Cell* new_cell) {
+  bool update_aig_node = aig_nodes_[aig_variable].active;
+  if (update_aig_node) CoverAIG(aig_variable);
+  aig_nodes_[aig_variable].cell = new_cell;
+  if (update_aig_node) UncoverAIG(aig_variable);
 }
 
 int IterativeTechnologyMapper::AddUnaryGate(const GateMapping& gate) {
@@ -407,9 +403,9 @@ void IterativeTechnologyMapper::CoverAIG(int variable) {
   aig_node.active = false;
 
   double leak = aig_node.cell->leakage_power();
-  area_ += aig_node.cell->area();
-  power_ += leak;
-  dynamic_power_ += leak * nodes_[variable].q;
+  area_ -= aig_node.cell->area();
+  power_ -= leak;
+  dynamic_power_ -= leak * nodes_[variable].q;
 
   // since you are covering the AIG node -- presumbly because either its one
   // dependency has been removed, or that the output gate is being
@@ -433,9 +429,9 @@ void IterativeTechnologyMapper::UncoverAIG(int variable) {
   aig_node.active = true;
 
   double leak = aig_node.cell->leakage_power();
-  area_ -= aig_node.cell->area();
-  power_ -= leak;
-  dynamic_power_ -= leak * nodes_[variable].q;
+  area_ += aig_node.cell->area();
+  power_ += leak;
+  dynamic_power_ += leak * nodes_[variable].q;
 
   // since you're uncovering the AIG node to use the default gate,
   // you have additional dependencies now
@@ -468,25 +464,4 @@ void IterativeTechnologyMapper::RemoveDependency(int variable) {
   // if removing the last dependency, you don't need it anymore
   bool last_dependency = --aig_node.deps == 0;
   if (last_dependency) CoverAIG(variable);
-}
-
-int32_t main() {
-  IterativeTechnologyMapper it;
-  it.Load("design6.aig");
-  it.LoadLibrary("lib1.json");
-  it.Initialize();
-
-  it.WriteMapping("a1.txt");
-  it.WriteVerilogABC("a1.v");
-  std::srand(0);
-  for (int i = 0; i < 10000; ++i) {
-    // const double area = it.area();
-    // const double power = it.power();
-    // const double dynamic_power = it.dynamic_power();
-
-    it.AddRandomGate();
-    it.UndoGateAdd();
-  }
-  it.WriteMapping("a2.txt");
-  it.WriteVerilogABC("a2.v");
 }

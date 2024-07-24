@@ -19,6 +19,10 @@ clean:
 main: ../src/main.cc
 	$(CC) -o main ../src/main.cc
 
+cf:
+	(cd build; make -f ../Makefile cost_estimator)
+run_sa:
+	(cd build; make -f ../Makefile sa) && ./build/sa
 run_itm:
 	(cd build; make -f ../Makefile itm) && ./build/itm
 ece:
@@ -47,7 +51,16 @@ iterative_technology_mapper.o: $(SRC_PATH)/iterative_technology_mapper.cc \
 	$(CC17) $(LORINA_INCLUDES) \
 		-c $(SRC_PATH)/iterative_technology_mapper.cc -o $@
 
+simulated_annealing_mapper.o: $(SRC_PATH)/simulated_annealing_mapper.cc \
+	$(SRC_PATH)/simulated_annealing_mapper.hh
+	$(CC17) $(LORINA_INCLUDES) \
+		-c $(SRC_PATH)/simulated_annealing_mapper.cc -o $@
+
 itm: iterative_technology_mapper.o aig.o aig_reader.o cell.o library.o
+	$(CC17) -o $@ $^
+
+sa: simulated_annealing_mapper.o iterative_technology_mapper.o \
+	aig.o aig_reader.o cell.o library.o
 	$(CC17) -o $@ $^
 
 library.o: $(SRC_PATH)/library.hh $(SRC_PATH)/library.cc
