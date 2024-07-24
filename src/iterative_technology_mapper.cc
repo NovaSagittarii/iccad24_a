@@ -479,5 +479,11 @@ void IterativeTechnologyMapper::RemoveDependency(int variable) {
 
   // if removing the last dependency, you don't need it anymore
   bool last_dependency = --aig_node.deps == 0;
-  if (last_dependency) CoverAIG(variable);
+  if (last_dependency) {
+    // if theres a gate that got added, remove it first
+    if (aig_node.covered_by != -1) RemoveBinaryGate(aig_node.covered_by);
+
+    // and then cover the AIG node
+    CoverAIG(variable);
+  }
 }
