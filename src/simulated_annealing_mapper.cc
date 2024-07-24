@@ -74,7 +74,7 @@ int32_t main() {
   std::srand(0);
 
   SimulatedAnnealingMapper mapper("a_out.v", std::cout);
-  mapper.Load("design1.fraig");
+  mapper.Load("design1.aig");
   mapper.LoadLibrary("lib1.json");
   mapper.Initialize();
   mapper.WriteVerilogABC("a_logic_before.v");
@@ -131,9 +131,9 @@ int32_t main() {
 
   // mapper.Run(temperature_schedule, cost, {add_random_gate}, 100, 1000);
   mapper.Run(temperature_schedule, cost, {change_aig_gate}, 1, 1);
-  mapper.Run(temperature_schedule, cost, {change_aig_gate}, 1e-2, 1e4);
+  mapper.Run(temperature_schedule, cost, {change_aig_gate}, 1e-2, 1e5);
   mapper.Run(temperature_schedule, cost, transitions, 1e-2, 1e6);
-  mapper.Run(temperature_schedule, cost, transitions, 0, 1e6);
+  // mapper.Run(temperature_schedule, cost, transitions, 0, 1e6);
   // mapper.Run(temperature_schedule, cost, {add_random_gate}, 100, 100000);
   mapper.WriteVerilogABC("a_logic_after.v");
 }

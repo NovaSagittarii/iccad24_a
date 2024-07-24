@@ -68,6 +68,11 @@ void IterativeTechnologyMapper::WriteMapping(
 void IterativeTechnologyMapper::WriteVerilogABC(
     const std::filesystem::path& file) const {
   std::ofstream fout(file);
+
+  for (int i = 0; i < sz_v_*2; ++i) {
+    fout << "// " << net_names_[i] << " deps=" << aig_nodes_[i].deps << "\n";
+  }
+
   std::string module = top_module_name_;
   fout << "module " << module.c_str() << "\n";
 
@@ -169,17 +174,21 @@ void IterativeTechnologyMapper::Initialize() {
   for (int i : inputs_) AddDependency(i);
   for (int i : outputs_) AddDependency(i);
 
+  // you don't count these here initially because the AIG
+  // is initially completely inactive -- only adding the outputs_ will
+  // propagate through the graph and update dependencies.
+
   // handle INV dependencies
-  for (int i = 0; i < sz_v_; ++i) {
-    // (i*2) ---NOT---> (i*2+1)
-    AddDependency(i * 2);
-  }
+  // for (int i = 0; i < sz_v_; ++i) {
+  //   // (i*2) ---NOT---> (i*2+1)
+  //   AddDependency(i * 2);
+  // }
 
   // handle AND gate dependencies
-  for (int i = sz_i_; i < sz_v_; ++i) {
-    // (a) + (b) ---AND---> (i*2)
-    for (auto inp : nodes_[i * 2].inputs) AddDependency(inp);
-  }
+  // for (int i = sz_i_; i < sz_v_; ++i) {
+  //   // (a) + (b) ---AND---> (i*2)
+  //   for (auto inp : nodes_[i * 2].inputs) AddDependency(inp);
+  // }
 
   // for (int i = 0; i < sz_v_*2; ++i) {
   //   std::cerr << aig_nodes_[i].deps << " ";
